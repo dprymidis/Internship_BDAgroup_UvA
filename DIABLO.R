@@ -80,12 +80,11 @@ ITAG4$id <- gsub("\\..*","",ITAG4$ID)
 trans.important.variables <- merge(trans.important.variables, ITAG4, by = "id")
 trans.important.variables <-as.data.frame( trans.important.variables[order(trans.important.variables$comp1, decreasing =  TRUE),] )
 
-aaa<- head( trans.important.variables, 20)
-aaa$id<- NULL
-aaa$comp1 <-NULL
-colnames(aaa)<- c("ID", "Description")
-write.table(aaa, "./mydata.txt", sep="\t")
-aaa
+vars<- head( trans.important.variables, 20)
+vars$id<- NULL
+vars$comp1 <-NULL
+colnames(vars)<- c("ID", "Description")
+write.table(vars, "./mydata.txt", sep="\t")
 
 #### metabolomics
 metab.load<- as.data.frame(abs(MyResult.diablo[["loadings"]][["metabolomics"]]))
@@ -108,19 +107,6 @@ cor(scores$m1, scores$y1)
 cor(scores$t2, scores$m2)
 cor(scores$t2, scores$y2)
 cor(scores$m2, scores$y2)
-
-
-####### check for 2 pc 20 vars trans metabs
-
-## trans
-#Solyc08g060920 , Solyc01g090210 ,  Solyc01g100270, Solyc03g093140, Solyc12g009480, Solyc01g110060, Solyc01g090890, Solyc06g069470, 
-#Solyc09g091910, Solyc07g049560, Solyc03g098010, Solyc01g100020, Solyc10g085850, Solyc10g084540, Solyc12g006130, Solyc10g085100,
-#Solyc12g056760, Solyc03g083010, Solyc11g010700, Solyc12g005590
-
-## metab
-#260.02959 Da 79.88 s, 334.06618 Da 81.02 s, 278.03968 Da 46.85 s , 224.00836 Da 47.08 s, 195.95414 Da 73.30 s
-
-#### what we learned is that select onl 1 pc and only 5 metab and 20 trans and try again
 
 
 #################3 check corrleation of 
