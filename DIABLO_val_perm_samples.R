@@ -262,9 +262,6 @@ ggplot(permres, aes(x=x1y)) +  geom_density(aes(x=x1y))+
 
 
 ########################################################################
-
-
-
 ############### results
 sum((abs(u11) -abs(MyResult.diablo[["variates"]][["transcriptomics"]][,1]))^2) +  
   sum((abs(u21) - abs(MyResult.diablo[["variates"]][["metabolomics"]][,1]))^2) 
@@ -272,224 +269,19 @@ sum((abs(u11) -abs(MyResult.diablo[["variates"]][["transcriptomics"]][,1]))^2) +
 sum((abs(w11) - abs(MyResult.diablo[["loadings"]][["transcriptomics"]][,1]))^2) + 
   sum((abs(w21) - abs(MyResult.diablo[["loadings"]][["metabolomics"]][,1]))^2) 
 
-############## permutations Y
-#Y <- c(0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1)
-# create Y
-#uy <- c(-0.707,-0.707,-0.707,-0.707,-0.707,-0.707,-0.707,-0.707,-0.707,-0.707,-0.707,-0.707,0.707,0.707,0.707,0.707,0.707,0.707,0.707,0.707,0.707,0.707,0.707,0.707)
-#wy <- c(-0.707, 0.707)
-#Y<- outer(uy, wy) 
-
-permdf <- as.data.frame(seq(1:24), nrow=1)
-for (i in 1:1000){ 
-  set.seed(1+i)
-  Yperm <-sample(Y, replace=FALSE, size=24)
-  permdf[,i] <- Yperm
-}
-sum(colSums(permdf) ==12)
-permres <- as.data.frame(1)
-options(digits=20)
-
-for (i in 1:1000){ 
-  Y <- permdf[,i]
-  Y <- as.factor(Y)
-  
-  list.keepX <- list(transcriptomics = c(sum(w11>0 | w11<0)), metabolomics = c(sum(w21>0 | w21<0)))
-  
-  MyResult.diablo <- block.splsda(X, Y, scale = TRUE,  ncomp = 1, keepX=list.keepX)
-  
-  serr <- sum((abs(u11) -abs(MyResult.diablo[["variates"]][["transcriptomics"]][,1]))^2) + 
-    sum((abs(u21) - abs(MyResult.diablo[["variates"]][["metabolomics"]][,1]))^2) 
-  
-  lerr <- sum((abs(w11) - abs(MyResult.diablo[["loadings"]][["transcriptomics"]][,1]))^2) + 
-    sum((abs(w21) - abs(MyResult.diablo[["loadings"]][["metabolomics"]][,1]))^2) 
-  
-  cerr <- cor(MyResult.diablo[["variates"]][["transcriptomics"]], MyResult.diablo[["variates"]][["metabolomics"]]) + cor(MyResult.diablo[["variates"]][["transcriptomics"]], MyResult.diablo[["variates"]][["Y"]]) + cor(MyResult.diablo[["variates"]][["metabolomics"]], MyResult.diablo[["variates"]][["Y"]])
-  
-  permres[i,1] <- serr
-  permres[i,2] <- lerr
-  permres[i,3] <- cerr
-}
-colnames(permres) <- c("Escore", "Eload", "Ecor")
-plot(permres$Escore)
-
-max(permres$Ecor)
-
-# for score
-hist(permres$Escore, breaks = 20, main = "Score error Distribution of permutated Y for 50% noise", xlim = c(2,8), xlab = "Score error") + 
-  abline(v=3.03, col="red", lwd=3, lty=2)
-
-# for laoad
-hist(permres$Eload, breaks = 20, main = "Loading error Distribution of permutated Y for 50% noise", xlim = c(0.6,1.5), xlab = "Score error") + 
-  abline(v=0.69, col="red", lwd=3, lty=2)
-
-##################
-# those with score less than 2.4 correct Y
-# have loaginds
-hist(permres$Eload[permres$Escore < 3], breaks = 10, main = "Loading error of min scores", xlim = c(0.5,1.5), xlab = "Loading error") + 
-  abline(v=0.69, col="red", lwd=3, lty=2)
-
-hist(permres$Escore[permres$Eload < 0.69], breaks = 10, main = "Score error of min loadings", xlim = c(2.2,5), xlab = "Score error") + 
-  abline(v=3, col="red", lwd=3, lty=2)
-
-which(permres$Escore < 3)
-
-a<- permdf[,339]
-a<- replace(a, a==0, 2)
-plot(u11, col = a) +  abline(v=12.5, col="grey", lwd=1) +title("Correct vs Low error Y vector")
-
-
-############### resutls ans plots
-Noise <- c(0, 0.2, 0.5, 1)
-Ser <- c(0, 1.5, 2.4, 3.4)
-Ler <- c( 0, 0.55, 0.83, 1.2)
-plot(Noise,Ser, col="red", type="l", lwd=3, )
-lines(Noise,Ler,col="green", lwd=3)
-
-a<- as.data.frame(cbind(Noise, Ser, Ler))
-v<- c("scores","scores","scores","scores","loadings","loadings","loadings","loadings")
-a<- as.data.frame(cbind(rbind(cbind(Noise, Ser), cbind(Noise, Ler)),v)  )
-colnames(a) <- c("Noise", "er", "Error")
-
-ggplot(a, aes(x=Noise)) + 
-  geom_line(aes(y = Ser), color = "darkred", lwd=1.5) + 
-  geom_line(aes(y = Ler), color="steelblue", lwd=1.5) + ggtitle("Error per noise") +
-  xlab("Noise") + ylab("Error") 
-
-
-############### individual checks
-
-### ### Check scores
-scores<- as.data.frame(cbind(MyResult.diablo[["variates"]][["transcriptomics"]], MyResult.diablo[["variates"]][["metabolomics"]] ))
-colnames(scores) <- c("tpc1","mpc1")
-scoredf <- cbind(scores, u11, u21)
-head(scoredf)
-
-par(mfrow=c(1,2))
-plot(scoredf$tpc1, scoredf$u11, main ="X1 dataset", xlab = "pc1 scores (output)", ylab = "u11 (input)")
-plot(scoredf$mpc1, scoredf$u21, main ="X2 dataset", xlab = "pc1 scores (output)", ylab = "u21 (input)")
-
-
-scoredf$tpc1/ scoredf$u11
-scoredf$mpc1/ scoredf$u21
-
-### ### ### ### check Scores and Loadings
-loadings<- as.data.frame(cbind(MyResult.diablo[["loadings"]][["transcriptomics"]], MyResult.diablo[["loadings"]][["metabolomics"]] ))
-colnames(loadings) <- c("tw1","mw1")
-
-loaddf <-as.data.frame(cbind(loadings, w11,  w21))
-head(loaddf)
-
-par(mfrow=c(1,2))
-plot(loadings$tw1, w11, main = "X1 dataset", xlab = "pc1 loadings (output)", ylab = "w11 (input)")
-plot(loadings$mw1, w21, main = "X2 dataset", xlab = "pc1 loadings (output)", ylab = "w21 (input)")
-
-sum(loadings$tw1*loadings$tw1)
-sum(w11*w11)
-sum(loadings$tw1*w11)
-
-
-
-###############
-a <- as.data.frame(t(cbind(loaddf[,1], loaddf[,3])))
-a<-as.data.frame(t(a[, colSums(a != 0) > 0]))
-
-b <- as.data.frame(a[,1])
-b$group <- "input"
-colnames(b)<- c("lala", "group")
-c <- as.data.frame(a[,2])
-c$group <- "output"
-colnames(c)<- c("lala", "group")
-d <- rbind(b,c)
-
-ggplot(d, aes(x=lala)) +  geom_density(aes(y=(..count..),group=group,color=group), adjust = 0.4)+
-  geom_point(stat = "count", colour = "black") + 
-  labs(title ="Loading vectors dataset 1 comp 1", x = "values of loading vectors", y = "density of obsernations") #+  ylim(50, 170)
-
-########################################
-# calculate error
-#The score error for dataset 1 component 1
-sum((scoredf$u11 - scoredf$tpc1)^2) # we add them because they have opposite directions
-#The score error for dataset 1 component 2
-sum((scoredf$u12 - scoredf$tpc2)^2) 
-#The score error for dataset 2 component 1
-sum((scoredf$u21 - scoredf$mpc1)^2) 
-#The score error for dataset 2 component 2
-sum((scoredf$u22 - scoredf$mpc2)^2) 
-
-#total score error
-sum((scoredf$u11 - scoredf$tpc1)^2) + sum((scoredf$u12 - scoredf$tpc2)^2) + sum((scoredf$u21 - scoredf$mpc1)^2) + sum((scoredf$u22 - scoredf$mpc2)^2) 
-
-#The loading error for dataset 1 component 1
-sum((loaddf$w11 - loaddf$tw1)^2)# we add them because they have opposite directions
-#The score error for dataset 1 component 2
-sum((loaddf$w12 - loaddf$tw2)^2)
-#The score error for dataset 2 component 1
-sum((loaddf$w21 - loaddf$mw1)^2)
-#The score error for dataset 2 component 2
-sum((loaddf$w22 - loaddf$mw2)^2) 
-
-#total loading error
-sum((loaddf$w11 - loaddf$tw1)^2) + sum((loaddf$w12 - loaddf$tw2)^2) + sum((loaddf$w21 - loaddf$mw1)^2) + sum((loaddf$w22 - loaddf$mw2)^2 )
-
-
-######################################
-# keep variables =/0 and rerun DIABLO
-
-X1 <- X1[,rowSums(loadings[,1:2]) !=0]
-X2 <- X2[,rowSums(loadings[,3:4]) !=0]
-
-################################################3 Check loading order change
-head(loaddf)
-library(tidyverse)
-
-w11or <- loaddf[order(loaddf$w11),] # order for in
-w11or$order <- seq(1:100)
-w11or <- w11or[order(w11or$tw1),] # order for out
-top<- slice(w11or, 1:10)
-sum(top$order <11)
-bot<- slice_tail(w11or, n=10)
-sum(bot$order >90)
-
-w21or <- loaddf[order(loaddf$w21),] # order for in
-w21or$order <- seq(1:100)
-w21or <- w21or[order(w21or$mw1),] # order for out
-top<- slice(w21or, 1:10)
-sum(top$order <11)
-bot<- slice_tail(w21or, n=10)
-sum(bot$order >90)
-
-############## Check cor of vectors
-#################### get scores and Y
-scores<- as.data.frame(cbind(MyResult.diablo[["variates"]][["transcriptomics"]], MyResult.diablo[["variates"]][["metabolomics"]], MyResult.diablo[["variates"]][["Y"]] ))
-colnames(scores) <- c("t1","m1" ,"y1")
-
-cor(scores$t1, scores$m1) + cor(scores$t1, scores$y1) + cor(scores$m1, scores$y1)
-
-cor(MyResult.diablo[["variates"]][["transcriptomics"]], MyResult.diablo[["variates"]][["metabolomics"]]) + cor(MyResult.diablo[["variates"]][["transcriptomics"]], MyResult.diablo[["variates"]][["Y"]]) + cor(MyResult.diablo[["variates"]][["metabolomics"]], MyResult.diablo[["variates"]][["Y"]])
-
-
-
 
 ## plots
 
 library(cowplot)
 
-########### take values
-#e0x1pf <- permres
-#e0x2pf <- permres
-#e0ypf  <- permres
-
-e5x1pf <- permres
+########### save the values from the results 
+e5x1pf <- permres # i.e. e5x1pf , error 50%, X1 data set permutation, full design
 e5x2pf <- permres
 e5ypf  <- permres
 
 e5x1pn <- permres
 e5x2pn <- permres
 e5ypn  <- permres
-
-#e5x1ph <- permres
-#e5x2ph <- permres
-#e5yph  <- permres
 
 
 a<- e5x1pf

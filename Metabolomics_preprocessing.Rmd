@@ -33,7 +33,7 @@ data <- read_csv("Data/raw/210617_Tomato_polar_positive_1000_noGC_raw_annotated.
 
 These are raw files
 
-I will rewrite the colnames by hand for now. To Do: make it combine the values of genotype, treatment and day with "_" in between.
+I will rewrite the colnames by hand.
 ```{r}
 names <- c('Bucket_label','RT','m/z','Name','Formula','wt_ypi_d2_1', 'wt_ypi_d2_2', 'wt_ypi_d2_3','wt_ypi_d3_1','wt_ypi_d3_2','wt_ypi_d3_3','wt_ypi_d4_1','wt_ypi_d4_2','wt_ypi_d4_3', 'wt_ypi_d5_1','wt_ypi_d5_2','wt_ypi_d5_3','wt_npi_d2_1','wt_npi_d2_2','wt_npi_d2_3','wt_npi_d3_1','wt_npi_d3_2','wt_npi_d3_3','wt_npi_d4_1','wt_npi_d4_2','wt_npi_d4_3','wt_npi_d5_1' ,'wt_npi_d5_2','wt_npi_d5_3', 'ccd8_ypi_d4_1','ccd8_ypi_d4_2','ccd8_npi_d4_1','ccd8_npi_d4_2','ccd8_npi_d4_3','wt_rep_d5_1','wt_rep_d5_2','wt_rep_d5_3')
 colnames(data) <- names
@@ -53,8 +53,6 @@ rownames(prefilt.data) <- tempnames # add the feature names as rownames
 
 # select only ctrl vs pdef columns
 prefilt.data <- prefilt.data[,1:24]
-
-#prefilt.data<- tdata
 ```
 
 
@@ -539,11 +537,11 @@ ggplot(vstdata, aes(x = mean, y = sd, shape = timepoint, colour = treatment)) +
   geom_point() + theme_bw()    +  scale_x_continuous(trans='log2') +
   scale_y_continuous(trans='log2') + xlab("log(mean)") + ylab("log(sd)")  + geom_abline(intercept = 0)   +ggtitle("vst transformation ")
 
-vstdata$lala <- 1
+vstdata$group <- 1
 
 ggplot(vstdata, aes(x = mean, y = sd, shape = timepoint, colour = treatment)) +
   geom_point() + theme_bw()    +  scale_x_continuous(trans='log2', limits = c(0.5,8)) +
-  scale_y_continuous(trans='log2', limits = c(0.5,8)) + xlab("log(mean)") + ylab("log(sd)") + geom_abline(intercept = 0)  +ggtitle("Vst transformation ") + geom_smooth(aes(group=lala),method='lm', formula= y~x, color = "red")
+  scale_y_continuous(trans='log2', limits = c(0.5,8)) + xlab("log(mean)") + ylab("log(sd)") + geom_abline(intercept = 0)  +ggtitle("Vst transformation ") + geom_smooth(aes(group=group),method='lm', formula= y~x, color = "red")
 
 ```
 
@@ -643,13 +641,3 @@ rownames(data.log) <- features
 
 ```
 
-
-```{r}
-# freds things
-#conds <- unique(gsub("_R[[:digit:]].*","",colnames(samples[1:5,-c(1:5)]))) ####filter per experimental condition on number of zeroes i <- NULL cond_zeroes <- data.frame(matrix()) for(i in 1:length(conds)){ #print(grep(conds[i], colnames(samples))) zeroes <- rowSums(samples[,grep(conds[i], colnames(samples))] == 0) cond_zeroes <- cbind(cond_zeroes,zeroes) } cond_zeroes <- cond_zeroes[,-1] colnames(cond_zeroes) <- conds samples2 <- samples[which(rowSums(cond_zeroes) < 11),] 
-```
-
-
-```{r}
-#samples <- read.table("~/210617_Tomato_polar_positive_1000_noGC_raw_annotated.csv", sep = ",", header = T, stringsAsFactors = F) #samples <- samples[,-which(samples[2,] == "ccd8")] #samples <- samples[,-grep("QC",colnames(samples))] met <- paste0(samples[2,],"_",samples[3,],"_",samples[1,],"_R") met <- gsub("wt","WT",met) met <- gsub("ypi_d","YP",met) met <- gsub("npi_d","NP",met) met <- gsub("rep_d","RP",met) #change to 1:5 for apolar met <- paste0(met,c(1:5,rep(c(1:3),8), c(1:2), rep(c(1:3),2))) colnames(samples)[-c(1:5)] <- met[-c(1:5)] samples <- samples[-c(1:3),] #polar positive only #samples$WT_NP2_R1 <- (as.numeric(samples$WT_NP2_R2) + as.numeric(samples$WT_NP2_R3))/2 #samples <- cbind(samples[,1:5], samples[,which(colnames(samples) %in% t_meta$sample_identifier)]) as.data.frame(table(gsub("_R[[:digit:]].*","",colnames(samples[1:5,-c(1:5)])))) rle(gsub("_R[[:digit:]].*","",colnames(samples[1:5,-c(1:5)])))$lengths conds <- unique(gsub("_R[[:digit:]].*","",colnames(samples[1:5,-c(1:5)]))) 
-```

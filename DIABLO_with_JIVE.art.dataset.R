@@ -1,5 +1,5 @@
 
-
+# First run JIVE_val_X3.R
 X1 <- t(X1)
 X2 <- t(X2)
 

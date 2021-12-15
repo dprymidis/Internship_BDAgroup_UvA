@@ -98,11 +98,11 @@ w21 <- w21 - mean(w21)
 w21 <- w21/sqrt(sum((w21)^2)) # scale it to length 1
 
 
-### add everything
-JointX1 <- outer(u11,S01)  * 0.6
-JointX2 <- outer(u21,S01)  * 0.6
-IndiX1 <- outer(w11,S11)   * 1.4
-IndiX2 <-  outer(w21,S21)  * 1.4
+### add everything # change joint/indi ratio
+JointX1 <- outer(u11,S01)  #* 0.6
+JointX2 <- outer(u21,S01)  #* 0.6
+IndiX1 <- outer(w11,S11)   #* 1.4
+IndiX2 <-  outer(w21,S21)  #* 1.4
 
 X1 <- JointX1 +IndiX1 
 X2 <- JointX2 + IndiX2 

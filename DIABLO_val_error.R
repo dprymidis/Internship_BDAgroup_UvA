@@ -150,8 +150,6 @@ sum(as.numeric(lapply(E2,var))^2) / sum(as.numeric(lapply(X2,var))^2)
 library(mixOmics)
 
 X<- list(transcriptomics = X1, metabolomics = X2)
-#Y <- c("wt","pd","wt","pd","wt","pd","wt","pd","wt","pd","wt","pd" ,"wt","pd","wt","pd","wt","pd","wt","pd","wt","pd","wt","pd")
-#Y <- c("wt","wt","wt","wt","wt","wt","wt","wt","wt","wt","wt","wt" ,"pd","pd","pd","pd","pd","pd","pd","pd","pd","pd","pd","pd")
 Y <- c("wt","wt","wt","wt","wt","wt","wt","wt","wt","wt","wt","wt" ,"pd","pd","pd","pd","pd","pd","pd","pd","pd","pd","pd","pd")
 # <- c(-0.5,-0.5,-0.5,-0.5,-0.5,-0.5,-0.5,-0.5,-0.5,-0.5,-0.5,-0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5)
 Y <- as.factor(Y)
@@ -254,14 +252,16 @@ sum((loaddf$w11 - loaddf$tw1)^2) + sum((loaddf$w12 - loaddf$tw2)^2) + sum((loadd
 
 
 ############## # results and plots
+
+#
 Noise <- c(0,20,50,100)
-Ser <- c(0,16,26,39)
-Ler <- c(0,0.32,0.47, 0.63)*10
+Scoreer <- c(0,16,26,39)
+Loadinger <- c(0,0.32,0.47, 0.63)*10
 #plot(Cor,Ser, col="red", type="l", lwd=3, ylim = c(0,10))#, ylab("Error")) #+ xlab("Correlation of U1i and U2i")
 #lines(Cor,Ler,col="green", lwd=3) #+ title("Erro for Changes in Cor(u1i,u2i)")# + ylab("Error") #+ xlab("Correlation of U1i and U2i")
 
 
-a<- as.data.frame(cbind(Noise, Ser, Ler))
+a<- as.data.frame(cbind(Noise, Scoreer, Loadinger))
 #v<- c("scores","scores","scores","scores","loadings","loadings","loadings","loadings")
 #a<- as.data.frame(cbind(rbind(cbind(Cor, Ser), cbind(Cor, Ler)),v)  )
 #colnames(a) <- c("Noise", "er", "Error")
@@ -311,16 +311,8 @@ sum(bot$order >90)
 
 
 
-######################################
-# keep variables =/0 and rerun DIABLO
 
-X1 <- X1[,rowSums(loadings[,1:2]) !=0]
-X2 <- X2[,rowSums(loadings[,3:4]) !=0]
-
-
-
-
-###################### DIABLO REAL tEST
+###################### DIABLO add 900 random variables to each data set
 
 X1 <- outer(u11, w11) + outer(u12, w12) 
 X2 <- outer(u21, w21) + outer(u22, w22) 

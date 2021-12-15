@@ -181,6 +181,8 @@ a$or <-   pcajoint1[["variates"]][["X"]]
 a$perm <- pcajoint2[["variates"]][["X"]] 
 plot(a$S01, a$or, main="In vs out score",
      xlab="Input S01", ylab="Output S01 of X1") 
+
+
 ############## # results and plots
 Noise <- c(0,20,50,70, 80, 100)
 Ser <- c(0,0.0045,0.024,0.076, 1000, 1000)*10*1.7
